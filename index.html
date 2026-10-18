@@ -52,7 +52,7 @@
 <div id="passo-codigo" class="card hidden">
     <h2>🔑 Digite o código do Chip/Gift Card</h2>
     <p>O código começa com <strong>RBX</strong> e termina com <strong>004</strong></p>
-    <input type="text" id="codigo-input" placeholder="Ex: RBX123XYZ004" maxlength="20">
+    <input type="text" id="codigo-input" placeholder="Ex: RBX123XYZ004" maxlength="30">
     <div id="codigo-status"></div>
     <button onclick="verificarCodigo()">✅ Verificar Código</button>
 </div>
@@ -127,7 +127,7 @@ function fecharPermissao() {
     document.getElementById('passo-inicio').classList.remove('hidden');
 }
 
-// 2 — ABRIR CÂMERA (corrigido pra funcionar!)
+// 2 — ABRIR CÂMERA
 async function abrirCamera() {
     document.getElementById('passo-permissao').classList.add('hidden');
     document.getElementById('passo-camera').classList.remove('hidden');
@@ -145,17 +145,16 @@ async function abrirCamera() {
         
     } catch (erro) {
         console.error('❌ Erro ao acessar câmera:', erro);
-        alert('❌ Não foi possível acessar a câmera. Verifique as permissões do navegador e tente novamente.\n\nSe estiver no celular: toque em "Permitir" quando pedir.');
+        alert('❌ Não foi possível acessar a câmera. Verifique as permissões do navegador e tente novamente.');
         document.getElementById('passo-camera').classList.add('hidden');
         document.getElementById('passo-inicio').classList.remove('hidden');
     }
 }
 
-// 3 — Reconhecimento do chip (simulação)
+// 3 — Reconhecimento do chip
 function reconhecerChip() {
     alert('✅ Chip/Gift Card identificado! Agora digite o código que está impresso nele.');
     
-    // Para a câmera
     if (streamDaCamera) {
         streamDaCamera.getTracks().forEach(track => track.stop());
         streamDaCamera = null;
@@ -165,14 +164,16 @@ function reconhecerChip() {
     document.getElementById('passo-codigo').classList.remove('hidden');
 }
 
-// 4 — Verificar formato do código
+// 4 — ✅ FUNÇÃO CORRIGIDA DE VERIFICAÇÃO DO CÓDIGO
 function verificarCodigo() {
-    const codigo = document.getElementById('codigo-input').value.trim();
+    let codigo = document.getElementById('codigo-input').value.trim();
     const statusDiv = document.getElementById('codigo-status');
     
-    const comecaCerto = codigo.substring(0, 3).toUpperCase() === 'RBX';
-    const terminaCerto = codigo.slice(-4) === '004';
-    const temTamanho = codigo.length > 7;
+    codigo = codigo.toUpperCase();
+    
+    const comecaCerto = codigo.startsWith('RBX');
+    const terminaCerto = codigo.endsWith('004');
+    const temTamanho = codigo.length >= 7;
     
     if (comecaCerto && terminaCerto && temTamanho) {
         statusDiv.innerHTML = '<div class="status success">✅ Código válido!</div>';
@@ -183,7 +184,11 @@ function verificarCodigo() {
             document.getElementById('passo-bot').classList.remove('hidden');
         }, 1000);
     } else {
-        statusDiv.innerHTML = '<div class="status error">❌ Formato inválido. Comece com RBX e termine com 004</div>';
+        let erro = '❌ Formato inválido! ';
+        if (!comecaCerto) erro += 'Deve começar com RBX. ';
+        if (!terminaCerto) erro += 'Deve terminar com 004. ';
+        if (!temTamanho) erro += 'Muito curto. ';
+        statusDiv.innerHTML = `<div class="status error">${erro}</div>`;
     }
 }
 
